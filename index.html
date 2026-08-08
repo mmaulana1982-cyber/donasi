@@ -411,6 +411,20 @@
             paymentGatewayRef.current = paymentGateway;
             const chatMessagesRef = useRef(chatMessages);
             chatMessagesRef.current = chatMessages;
+            const publicChatEndRef = useRef(null);
+            const adminChatEndRef = useRef(null);
+
+            useEffect(() => {
+                if (publicChatEndRef.current) {
+                    publicChatEndRef.current.scrollIntoView({ behavior: 'smooth' });
+                }
+            }, [chatMessages, chatOpen]);
+
+            useEffect(() => {
+                if (adminChatEndRef.current) {
+                    adminChatEndRef.current.scrollIntoView({ behavior: 'smooth' });
+                }
+            }, [chatMessages]);
 
             const saveToBackend = async () => {
                 try {
@@ -906,6 +920,7 @@
                                 onResetAdminAccounts={handleResetAdminAccounts}
                                 chatMessages={chatMessages}
                                 setChatMessages={setChatMessages}
+                                adminChatEndRef={adminChatEndRef}
                             />
                         ) : null}
 
@@ -1070,6 +1085,7 @@
                                         </div>
                                     );
                                 })}
+                                <div ref={publicChatEndRef} />
                             </div>
 
                             {/* Chat Input */}
@@ -2415,7 +2431,7 @@
             );
         }
 
-        function AdminDashboardView({ stats, programs, setPrograms, donations, expenses, setExpenses, auditLogs, adminRole, setAdminRole, appSettings, onAppSettingsChange, onSaveAppSettings, paymentGateway, setPaymentGateway, onSavePaymentGateway, activeTab, setActiveTab, onVerify, getProgramProgress, showToast, contentItems, setContentItems, aboutContent, setAboutContent, adminAccounts, setAdminAccounts, onResetAdminAccounts, chatMessages, setChatMessages }) {
+        function AdminDashboardView({ stats, programs, setPrograms, donations, expenses, setExpenses, auditLogs, adminRole, setAdminRole, appSettings, onAppSettingsChange, onSaveAppSettings, paymentGateway, setPaymentGateway, onSavePaymentGateway, activeTab, setActiveTab, onVerify, getProgramProgress, showToast, contentItems, setContentItems, aboutContent, setAboutContent, adminAccounts, setAdminAccounts, onResetAdminAccounts, chatMessages, setChatMessages, adminChatEndRef }) {
             const [newExpDesc, setNewExpDesc] = useState('');
             const [newExpAmount, setNewExpAmount] = useState('');
             const [newExpProgramId, setNewExpProgramId] = useState(programs[0]?.id || '');
@@ -3796,6 +3812,7 @@
                                             </div>
                                         ))
                                     )}
+                                    <div ref={adminChatEndRef} />
                                 </div>
                                 <div className="flex items-center gap-2 pt-2">
                                     <input

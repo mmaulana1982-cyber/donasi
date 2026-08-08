@@ -796,6 +796,21 @@
                                     <i className="fas fa-heart text-gold-400"></i>
                                     <span>Donasi Sekarang</span>
                                 </button>
+
+                                {/* Admin Switcher Button */}
+                                <button 
+                                    onClick={handleAdminToggle}
+                                    className={`relative px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition ${currentView === 'admin' ? 'bg-gold-500 text-brand-900 font-bold' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+                                    title="Masuk ke Mode Admin"
+                                >
+                                    <i className="fas fa-user-shield"></i>
+                                    <span>{currentView === 'admin' ? 'Kembali ke Web' : 'Dashboard Admin'}</span>
+                                    {stats.pendingCount > 0 && currentView !== 'admin' && (
+                                        <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white rounded-full text-[10px] flex items-center justify-center font-bold animate-pulse">
+                                            {stats.pendingCount}
+                                        </span>
+                                    )}
+                                </button>
                             </div>
                         </div>
                     </header>

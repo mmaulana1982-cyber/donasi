@@ -1,0 +1,18 @@
+{
+  "name": "Hidayatullah Peduli",
+  "short_name": "Hidayatullah Peduli",
+  "description": "Platform resmi donasi digital Pondok Pesantren Hidayatullah Kabupaten Sorong",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f8fafc",
+  "theme_color": "#065f46",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "https://i.ibb.co.com/JRpdV2rR/Logo-hidayatullah.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    }
+  ]
+}

@@ -7,6 +7,12 @@
     
     <!-- Favicon -->
     <link rel="icon" type="image/jpeg" href="https://i.ibb.co.com/JRpdV2rR/Logo-hidayatullah.jpg">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#065f46">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Hidayatullah Peduli">
+    <link rel="apple-touch-icon" href="https://i.ibb.co.com/JRpdV2rR/Logo-hidayatullah.jpg">
 
     <!-- Primary SEO & Open Graph Meta Tags -->
     <meta name="title" content="Hidayatullah Peduli - Bersama Berbagi, Bersama Membangun Generasi">
@@ -616,21 +622,6 @@
                                 >
                                     <i className="fas fa-heart text-gold-400"></i>
                                     <span>Donasi Sekarang</span>
-                                </button>
-
-                                {/* Admin Switcher Button */}
-                                <button 
-                                    onClick={handleAdminToggle}
-                                    className={`relative px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition ${currentView === 'admin' ? 'bg-gold-500 text-brand-900 font-bold' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
-                                    title="Masuk ke Mode Admin"
-                                >
-                                    <i className="fas fa-user-shield"></i>
-                                    <span>{currentView === 'admin' ? 'Kembali ke Web' : 'Dashboard Admin'}</span>
-                                    {stats.pendingCount > 0 && currentView !== 'admin' && (
-                                        <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white rounded-full text-[10px] flex items-center justify-center font-bold animate-pulse">
-                                            {stats.pendingCount}
-                                        </span>
-                                    )}
                                 </button>
                             </div>
                         </div>
@@ -3564,6 +3555,18 @@
         const rootElement = document.getElementById('root');
         const root = ReactDOM.createRoot(rootElement);
         root.render(<App />);
+    </script>
+
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js').then((registration) => {
+                    console.log('SW registered: ', registration);
+                }).catch((registrationError) => {
+                    console.log('SW registration failed: ', registrationError);
+                });
+            });
+        }
     </script>
 </body>
 </html>

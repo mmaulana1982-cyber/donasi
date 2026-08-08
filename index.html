@@ -100,6 +100,14 @@
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in-up {
+            animation: fadeInUp 0.3s ease-out forwards;
+        }
+        
         /* Print styles for Bukti Donasi PDF */
         @media print {
             body * { visibility: hidden; }
@@ -313,11 +321,11 @@
         const ROLE_PERMISSIONS = {
             SUPER_ADMIN: {
                 label: 'SUPER ADMIN',
-                tabs: ['overview', 'verification', 'programs', 'expenses', 'content', 'about', 'settings', 'audit']
+                tabs: ['overview', 'verification', 'programs', 'expenses', 'content', 'about', 'settings', 'audit', 'chat']
             },
             ADMIN_DONATION: {
                 label: 'ADMIN DONASI',
-                tabs: ['overview', 'verification', 'programs', 'content', 'about']
+                tabs: ['overview', 'verification', 'programs', 'content', 'about', 'chat']
             },
             TREASURER: {
                 label: 'BENDAHARA',
@@ -401,6 +409,8 @@
             appSettingsRef.current = appSettings;
             const paymentGatewayRef = useRef(paymentGateway);
             paymentGatewayRef.current = paymentGateway;
+            const chatMessagesRef = useRef(chatMessages);
+            chatMessagesRef.current = chatMessages;
 
             const saveToBackend = async () => {
                 try {
@@ -416,7 +426,8 @@
                             aboutContent: aboutContentRef.current,
                             adminAccounts: adminAccountsRef.current,
                             appSettings: appSettingsRef.current,
-                            paymentGateway: paymentGatewayRef.current
+                            paymentGateway: paymentGatewayRef.current,
+                            chatMessages: chatMessagesRef.current
                         })
                     });
                 } catch (e) {
@@ -437,6 +448,7 @@
                             if (data.contentItems) setContentItems(data.contentItems);
                             if (data.aboutContent) setAboutContent(data.aboutContent);
                             if (data.adminAccounts) setAdminAccounts(data.adminAccounts);
+                            if (data.chatMessages) setChatMessages(data.chatMessages);
                             if (data.appSettings) {
                                 setAppSettings(data.appSettings);
                                 Object.assign(INSTITUTION_INFO, data.appSettings);
@@ -469,7 +481,7 @@
                     saveToBackend();
                 }, 800);
                 return () => clearTimeout(timer);
-            }, [programs, donations, expenses, auditLogs, contentItems, aboutContent, adminAccounts, appSettings, paymentGateway]);
+            }, [programs, donations, expenses, auditLogs, contentItems, aboutContent, adminAccounts, appSettings, paymentGateway, chatMessages]);
 
             const handleAppSettingsChange = (field, value) => {
                 setAppSettings(prev => ({ ...prev, [field]: value }));
@@ -497,6 +509,40 @@
                 { sender: 'system', text: 'Assalamu\'alaikum! Selamat datang di Hidayatullah Peduli. Ada yang dapat kami bantu terkait donasi?' }
             ]);
             const [chatInput, setChatInput] = useState('');
+            const [pwaInstallPrompt, setPwaInstallPrompt] = useState(null);
+            const [pwaInstallVisible, setPwaInstallVisible] = useState(false);
+            const pwaInstallTimerRef = useRef(null);
+
+            useEffect(() => {
+                const handler = (e) => {
+                    e.preventDefault();
+                    setPwaInstallPrompt(e);
+                    setPwaInstallVisible(true);
+                    if (pwaInstallTimerRef.current) clearTimeout(pwaInstallTimerRef.current);
+                    pwaInstallTimerRef.current = setTimeout(() => {
+                        setPwaInstallVisible(false);
+                    }, 20000);
+                };
+                window.addEventListener('beforeinstallprompt', handler);
+                return () => window.removeEventListener('beforeinstallprompt', handler);
+            }, []);
+
+            const handlePwaInstall = async () => {
+                if (!pwaInstallPrompt) return;
+                pwaInstallPrompt.prompt();
+                const result = await pwaInstallPrompt.userChoice;
+                if (result.outcome === 'accepted') {
+                    showToast('Aplikasi berhasil diinstall!');
+                }
+                setPwaInstallPrompt(null);
+                setPwaInstallVisible(false);
+                if (pwaInstallTimerRef.current) clearTimeout(pwaInstallTimerRef.current);
+            };
+
+            const handlePwaDismiss = () => {
+                setPwaInstallVisible(false);
+                if (pwaInstallTimerRef.current) clearTimeout(pwaInstallTimerRef.current);
+            };
 
             const handleLogin = (e) => {
                 e.preventDefault();
@@ -667,6 +713,29 @@
                         </div>
                     )}
 
+                    {/* PWA INSTALL POPUP */}
+                    {pwaInstallVisible && (
+                        <div className="fixed top-5 left-5 z-50 bg-white rounded-2xl shadow-2xl border border-gray-200 p-5 max-w-sm animate-fade-in-up">
+                            <div className="flex items-start gap-3">
+                                <div className="w-12 h-12 rounded-xl bg-brand-800 text-gold-400 flex items-center justify-center text-xl flex-shrink-0">
+                                    <i className="fas fa-download"></i>
+                                </div>
+                                <div className="flex-1">
+                                    <h4 className="font-bold text-sm text-brand-900">Install Aplikasi</h4>
+                                    <p className="text-xs text-gray-600 mt-1">Install Hidayatullah Peduli di perangkat Anda untuk akses lebih cepat dan offline.</p>
+                                    <div className="flex gap-2 mt-3">
+                                        <button onClick={handlePwaInstall} className="flex-1 bg-brand-800 text-white text-xs font-bold py-2 rounded-xl hover:bg-brand-900 transition">
+                                            Install
+                                        </button>
+                                        <button onClick={handlePwaDismiss} className="px-3 py-2 bg-gray-100 text-gray-700 text-xs font-bold rounded-xl hover:bg-gray-200 transition">
+                                            Nanti
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
                     {/* APP HEADER / NAVBAR */}
                     <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-gray-100 shadow-sm">
                         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
@@ -804,6 +873,8 @@
                                 adminAccounts={adminAccounts}
                                 setAdminAccounts={setAdminAccounts}
                                 onResetAdminAccounts={handleResetAdminAccounts}
+                                chatMessages={chatMessages}
+                                setChatMessages={setChatMessages}
                             />
                         ) : null}
 
@@ -849,6 +920,7 @@
                                     <li><button onClick={() => setCurrentView('transparansi')} className="hover:text-gold-400 transition">Laporan Transparansi</button></li>
                                     <li><button onClick={() => setCurrentView('cek-donasi')} className="hover:text-gold-400 transition">Cek Status Donasi</button></li>
                                     <li><button onClick={() => setCurrentView('tentang')} className="hover:text-gold-400 transition">Profil Pesantren</button></li>
+                                    <li><a href="https://ayoberbagi.web.id/login/admin" target="_blank" rel="noopener noreferrer" className="text-gold-400 hover:text-gold-300 font-bold transition">Login Admin</a></li>
                                 </ul>
                             </div>
 
@@ -2258,7 +2330,7 @@
             );
         }
 
-        function AdminDashboardView({ stats, programs, setPrograms, donations, expenses, setExpenses, auditLogs, adminRole, setAdminRole, appSettings, onAppSettingsChange, onSaveAppSettings, paymentGateway, setPaymentGateway, onSavePaymentGateway, activeTab, setActiveTab, onVerify, getProgramProgress, showToast, contentItems, setContentItems, aboutContent, setAboutContent, adminAccounts, setAdminAccounts, onResetAdminAccounts }) {
+        function AdminDashboardView({ stats, programs, setPrograms, donations, expenses, setExpenses, auditLogs, adminRole, setAdminRole, appSettings, onAppSettingsChange, onSaveAppSettings, paymentGateway, setPaymentGateway, onSavePaymentGateway, activeTab, setActiveTab, onVerify, getProgramProgress, showToast, contentItems, setContentItems, aboutContent, setAboutContent, adminAccounts, setAdminAccounts, onResetAdminAccounts, chatMessages, setChatMessages }) {
             const [newExpDesc, setNewExpDesc] = useState('');
             const [newExpAmount, setNewExpAmount] = useState('');
             const [newExpProgramId, setNewExpProgramId] = useState(programs[0]?.id || '');
@@ -2574,6 +2646,7 @@
                                 { id: 'expenses', name: 'Kelola Transparansi & RAB' },
                                 { id: 'content', name: 'Kelola Konten' },
                                 { id: 'about', name: 'Tentang Kami' },
+                                { id: 'chat', name: 'Live Chat' },
                                 { id: 'settings', name: 'Pengaturan Aplikasi' },
                                 { id: 'audit', name: 'Audit Log System' }
                             ].filter(tab => canAccessTab(tab.id)).map(tab => (
@@ -3619,20 +3692,55 @@
                             </div>
                         )}
 
-                        {/* TAB 5: AUDIT LOG */}
-                        {activeTab === 'audit' && (
+                        {/* TAB: LIVE CHAT MANAGEMENT */}
+                        {activeTab === 'chat' && (
                             <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-200 space-y-4">
-                                <h3 className="font-bold text-sm text-brand-900">System Audit Trail Log</h3>
-                                <div className="divide-y text-xs">
-                                    {auditLogs.map(log => (
-                                        <div key={log.id} className="py-2.5 flex items-center justify-between">
-                                            <div>
-                                                <p className="font-bold text-gray-800">{log.action}</p>
-                                                <p className="text-[10px] text-gray-500">{log.details}</p>
+                                <h3 className="font-bold text-sm text-brand-900">Live Chat Management</h3>
+                                <p className="text-xs text-gray-500">Balas pesan dari pengunjung yang mengirimkan chat melalui website.</p>
+                                <div className="bg-gray-50 rounded-2xl border border-gray-200 p-4 max-h-[500px] overflow-y-auto space-y-3">
+                                    {chatMessages.length === 0 ? (
+                                        <p className="text-xs text-gray-500 italic">Belum ada pesan chat.</p>
+                                    ) : (
+                                        chatMessages.map((msg, idx) => (
+                                            <div key={idx} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
+                                                <div className={`max-w-[80%] rounded-2xl p-3 ${msg.sender === 'user' ? 'bg-brand-800 text-white rounded-br-none' : 'bg-white border border-gray-200 text-gray-800 rounded-bl-none shadow-sm'}`}>
+                                                    <p className="text-[10px] font-bold uppercase mb-1 opacity-70">{msg.sender === 'user' ? 'Pengunjung' : msg.sender === 'admin' ? 'Admin' : 'System'}</p>
+                                                    <p className="text-xs">{msg.text}</p>
+                                                </div>
                                             </div>
-                                            <span className="text-[10px] text-gray-400">{log.timestamp}</span>
-                                        </div>
-                                    ))}
+                                        ))
+                                    )}
+                                </div>
+                                <div className="flex items-center gap-2 pt-2">
+                                    <input
+                                        type="text"
+                                        id="admin-chat-reply"
+                                        placeholder="Ketik balasan untuk pengunjung..."
+                                        className="flex-grow text-xs border border-gray-300 rounded-xl px-3 py-2 focus:outline-none focus:border-brand-700"
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Enter') {
+                                                const input = e.target;
+                                                const text = input.value.trim();
+                                                if (!text) return;
+                                                const reply = { sender: 'admin', text };
+                                                setChatMessages(prev => [...prev, reply]);
+                                                input.value = '';
+                                            }
+                                        }}
+                                    />
+                                    <button
+                                        onClick={() => {
+                                            const input = document.getElementById('admin-chat-reply');
+                                            const text = input.value.trim();
+                                            if (!text) return;
+                                            const reply = { sender: 'admin', text };
+                                            setChatMessages(prev => [...prev, reply]);
+                                            input.value = '';
+                                        }}
+                                        className="bg-brand-800 text-gold-400 p-2 rounded-xl hover:bg-brand-900 transition"
+                                    >
+                                        <i className="fas fa-paper-plane text-xs"></i>
+                                    </button>
                                 </div>
                             </div>
                         )}

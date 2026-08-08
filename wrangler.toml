@@ -1,3 +1,7 @@
 name = "hidayatullah-peduli"
 compatibility_date = "2025-08-01"
 pages_build_output_dir = "."
+
+[[kv_namespaces]]
+binding = "HIDAYATULLAH_DATA"
+id = "59571eee726a4d43a284ef9499fb2b37"

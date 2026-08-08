@@ -1,0 +1,14 @@
+{
+  "name": "hidayatullah-peduli",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Hidayatullah Peduli donation landing page for Cloudflare Pages deployment",
+  "scripts": {
+    "dev": "npx serve . -l 3000",
+    "preview:cloudflare": "npx wrangler pages dev .",
+    "deploy:cloudflare": "npx wrangler pages deploy . --project-name hidayatullah-peduli"
+  },
+  "devDependencies": {
+    "wrangler": "^3.107.3"
+  }
+}

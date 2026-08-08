@@ -329,7 +329,7 @@
             },
             TREASURER: {
                 label: 'BENDAHARA',
-                tabs: ['overview', 'expenses', 'audit']
+                tabs: ['overview', 'expenses', 'audit', 'chat']
             }
         };
 
@@ -1055,13 +1055,21 @@
 
                             {/* Chat Messages Body */}
                             <div className="flex-grow p-4 overflow-y-auto space-y-3 bg-gray-50 text-xs">
-                                {chatMessages.map((msg, idx) => (
-                                    <div key={idx} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
-                                        <div className={`max-w-[80%] rounded-2xl p-3 ${msg.sender === 'user' ? 'bg-brand-800 text-white rounded-br-none' : 'bg-white border border-gray-200 text-gray-800 rounded-bl-none shadow-sm'}`}>
-                                            <p>{msg.text}</p>
+                                {chatMessages.map((msg, idx) => {
+                                    const isAdmin = msg.sender === 'admin';
+                                    const isSystem = msg.sender === 'system';
+                                    const isUser = msg.sender === 'user';
+                                    return (
+                                        <div key={idx} className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}>
+                                            <div className={`max-w-[80%] rounded-2xl p-3 ${isUser ? 'bg-brand-800 text-white rounded-br-none' : isAdmin ? 'bg-emerald-50 border border-emerald-200 text-gray-800 rounded-bl-none' : 'bg-white border border-gray-200 text-gray-800 rounded-bl-none shadow-sm'}`}>
+                                                {(isAdmin || isSystem) && (
+                                                    <p className="text-[10px] font-bold uppercase mb-1 text-emerald-700">{isAdmin ? (msg.role ? `Admin ${msg.role}` : 'Admin') : 'System'}</p>
+                                                )}
+                                                <p>{msg.text}</p>
+                                            </div>
                                         </div>
-                                    </div>
-                                ))}
+                                    );
+                                })}
                             </div>
 
                             {/* Chat Input */}
@@ -2428,6 +2436,7 @@
                 status: 'ACTIVE',
                 featured: false,
             });
+            const [adminChatInput, setAdminChatInput] = useState('');
 
             const allowedTabs = ROLE_PERMISSIONS[adminRole]?.tabs || ROLE_PERMISSIONS.SUPER_ADMIN.tabs;
             const canAccessTab = (tabId) => allowedTabs.includes(tabId);
@@ -3780,8 +3789,8 @@
                                     ) : (
                                         chatMessages.map((msg, idx) => (
                                             <div key={idx} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
-                                                <div className={`max-w-[80%] rounded-2xl p-3 ${msg.sender === 'user' ? 'bg-brand-800 text-white rounded-br-none' : 'bg-white border border-gray-200 text-gray-800 rounded-bl-none shadow-sm'}`}>
-                                                    <p className="text-[10px] font-bold uppercase mb-1 opacity-70">{msg.sender === 'user' ? 'Pengunjung' : msg.sender === 'admin' ? 'Admin' : 'System'}</p>
+                                                <div className={`max-w-[80%] rounded-2xl p-3 ${msg.sender === 'user' ? 'bg-brand-800 text-white rounded-br-none' : msg.sender === 'admin' ? 'bg-emerald-50 border border-emerald-200 text-gray-800 rounded-bl-none' : 'bg-white border border-gray-200 text-gray-800 rounded-bl-none shadow-sm'}`}>
+                                                    <p className="text-[10px] font-bold uppercase mb-1 text-emerald-700">{msg.sender === 'user' ? 'Pengunjung' : msg.sender === 'admin' ? (msg.role ? `Admin ${msg.role}` : 'Admin') : 'System'}</p>
                                                     <p className="text-xs">{msg.text}</p>
                                                 </div>
                                             </div>
@@ -3791,28 +3800,27 @@
                                 <div className="flex items-center gap-2 pt-2">
                                     <input
                                         type="text"
-                                        id="admin-chat-reply"
-                                        placeholder="Ketik balasan untuk pengunjung..."
-                                        className="flex-grow text-xs border border-gray-300 rounded-xl px-3 py-2 focus:outline-none focus:border-brand-700"
+                                        value={adminChatInput}
+                                        onChange={(e) => setAdminChatInput(e.target.value)}
                                         onKeyDown={(e) => {
                                             if (e.key === 'Enter') {
-                                                const input = e.target;
-                                                const text = input.value.trim();
+                                                const text = adminChatInput.trim();
                                                 if (!text) return;
-                                                const reply = { sender: 'admin', text };
+                                                const reply = { sender: 'admin', text, role: adminRole };
                                                 setChatMessages(prev => [...prev, reply]);
-                                                input.value = '';
+                                                setAdminChatInput('');
                                             }
                                         }}
+                                        placeholder="Ketik balasan untuk pengunjung..."
+                                        className="flex-grow text-xs border border-gray-300 rounded-xl px-3 py-2 focus:outline-none focus:border-brand-700"
                                     />
                                     <button
                                         onClick={() => {
-                                            const input = document.getElementById('admin-chat-reply');
-                                            const text = input.value.trim();
+                                            const text = adminChatInput.trim();
                                             if (!text) return;
-                                            const reply = { sender: 'admin', text };
+                                            const reply = { sender: 'admin', text, role: adminRole };
                                             setChatMessages(prev => [...prev, reply]);
-                                            input.value = '';
+                                            setAdminChatInput('');
                                         }}
                                         className="bg-brand-800 text-gold-400 p-2 rounded-xl hover:bg-brand-900 transition"
                                     >

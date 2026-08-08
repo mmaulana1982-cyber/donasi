@@ -544,6 +544,20 @@
                 if (pwaInstallTimerRef.current) clearTimeout(pwaInstallTimerRef.current);
             };
 
+            useEffect(() => {
+                const handleHash = () => {
+                    const hash = window.location.hash.replace('#', '');
+                    if (hash === 'login') {
+                        setCurrentView('login');
+                    } else if (hash === 'admin' && isLoggedIn) {
+                        setCurrentView('admin');
+                    }
+                };
+                handleHash();
+                window.addEventListener('hashchange', handleHash);
+                return () => window.removeEventListener('hashchange', handleHash);
+            }, [isLoggedIn]);
+
             const handleLogin = (e) => {
                 e.preventDefault();
                 const username = loginForm.username.trim();
@@ -763,6 +777,7 @@
                             <nav className="hidden md:flex items-center gap-6 font-medium text-sm text-gray-600">
                                 <button onClick={() => setCurrentView('home')} className={`hover:text-brand-700 transition ${currentView === 'home' ? 'text-brand-800 font-bold border-b-2 border-brand-700 py-1' : ''}`}>Beranda</button>
                                 <button onClick={() => setCurrentView('programs')} className={`hover:text-brand-700 transition ${currentView === 'programs' ? 'text-brand-800 font-bold border-b-2 border-brand-700 py-1' : ''}`}>Program Donasi</button>
+                                <button onClick={() => setCurrentView('berita')} className={`hover:text-brand-700 transition ${currentView === 'berita' ? 'text-brand-800 font-bold border-b-2 border-brand-700 py-1' : ''}`}>Berita</button>
                                 <button onClick={() => setCurrentView('transparansi')} className={`hover:text-brand-700 transition ${currentView === 'transparansi' ? 'text-brand-800 font-bold border-b-2 border-brand-700 py-1' : ''}`}>Transparansi</button>
                                 <button onClick={() => setCurrentView('cek-donasi')} className={`hover:text-brand-700 transition ${currentView === 'cek-donasi' ? 'text-brand-800 font-bold border-b-2 border-brand-700 py-1' : ''}`}>Cek Donasi</button>
                                 <button onClick={() => setCurrentView('tentang')} className={`hover:text-brand-700 transition ${currentView === 'tentang' ? 'text-brand-800 font-bold border-b-2 border-brand-700 py-1' : ''}`}>Tentang Kami</button>
@@ -834,6 +849,7 @@
                         )}
 
                         {currentView === 'tentang' && <TentangKamiView aboutContent={aboutContent} />}
+                        {currentView === 'berita' && <BeritaView contentItems={contentItems} />}
                         {currentView === 'kontak' && <KontakView />}
                         {currentView === 'login' && (
                             <LoginView 
@@ -921,6 +937,7 @@
                                     <li><button onClick={() => setCurrentView('cek-donasi')} className="hover:text-gold-400 transition">Cek Status Donasi</button></li>
                                     <li><button onClick={() => setCurrentView('tentang')} className="hover:text-gold-400 transition">Profil Pesantren</button></li>
                                     <li><a href="https://ayoberbagi.web.id/login/admin" target="_blank" rel="noopener noreferrer" className="text-gold-400 hover:text-gold-300 font-bold transition">Login Admin</a></li>
+                                    <li><button onClick={() => { setCurrentView('login'); window.location.hash = 'login'; }} className="text-gray-300 hover:text-gold-400 transition">Login Internal</button></li>
                                 </ul>
                             </div>
 
@@ -2244,6 +2261,51 @@
                             </div>
                         </div>
                     </div>
+                </div>
+            );
+        }
+
+        function BeritaView({ contentItems }) {
+            const news = (contentItems && contentItems.length > 0 ? contentItems : INITIAL_CONTENT_ITEMS).filter(item => item.published);
+            return (
+                <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-8">
+                    <div className="text-center max-w-2xl mx-auto space-y-3">
+                        <span className="text-xs font-bold text-gold-600 uppercase tracking-widest bg-gold-50 px-3 py-1 rounded-full border border-gold-200">Berita & Kegiatan</span>
+                        <h1 className="text-3xl font-extrabold text-brand-900">Berita Terbaru Pondok Pesantren Hidayatullah</h1>
+                        <p className="text-xs text-gray-600">Informasi dan kabar terbaru seputar kegiatan, donasi, dan perkembangan pesantren.</p>
+                    </div>
+
+                    {news.length === 0 ? (
+                        <div className="bg-white p-12 rounded-3xl text-center text-gray-500 border border-gray-200 space-y-3">
+                            <i className="fas fa-newspaper text-4xl text-gray-300"></i>
+                            <p className="text-sm font-bold">Belum ada berita yang dipublikasikan.</p>
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                            {news.map(item => (
+                                <div key={item.id} className="bg-white rounded-3xl overflow-hidden border border-gray-200 shadow-md hover:shadow-xl transition-all duration-300 flex flex-col">
+                                    {item.image && (
+                                        <div className="h-48 overflow-hidden">
+                                            <img src={item.image} alt={item.title} className="w-full h-full object-cover hover:scale-105 transition duration-500" />
+                                        </div>
+                                    )}
+                                    <div className="p-6 space-y-3 flex flex-col flex-grow">
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-[10px] font-bold text-brand-800 bg-brand-50 px-2 py-1 rounded-full uppercase tracking-wider">{item.category}</span>
+                                            <span className="text-[10px] text-gray-400">{item.createdAt}</span>
+                                        </div>
+                                        <h3 className="font-extrabold text-base text-brand-900 leading-snug">{item.title}</h3>
+                                        <p className="text-xs text-gray-600 line-clamp-3 leading-relaxed flex-grow">{item.excerpt || item.body}</p>
+                                        <div className="pt-2">
+                                            <span className="inline-flex items-center gap-1 text-xs font-bold text-brand-800 hover:text-brand-900 transition">
+                                                Baca Selengkapnya <i className="fas fa-arrow-right text-[10px]"></i>
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
                 </div>
             );
         }

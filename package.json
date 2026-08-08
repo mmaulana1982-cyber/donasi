@@ -9,6 +9,21 @@
     "deploy:cloudflare": "npx wrangler pages deploy . --project-name hidayatullah-peduli"
   },
   "devDependencies": {
+    "@babel/core": "^7.26.0",
+    "@babel/parser": "^7.26.0",
     "wrangler": "^3.107.3"
-  }
+  },
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mmaulana1982-cyber/donasi.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/mmaulana1982-cyber/donasi/issues"
+  },
+  "homepage": "https://github.com/mmaulana1982-cyber/donasi#readme"
 }

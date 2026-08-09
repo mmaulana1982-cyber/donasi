@@ -138,7 +138,8 @@
             tiktokUrl: "https://tiktok.com/@hidayatullahpeduli",
             bankBSI: "712-345-6789 (a.n. Ponpes Hidayatullah Sorong)",
             bankMandiri: "160-00-9876543-2 (a.n. Yayasan Hidayatullah Sorong)",
-            qrisMerchant: "HIDAYATULLAH PEDULI SORONG"
+            qrisMerchant: "HIDAYATULLAH PEDULI SORONG",
+            heroImage: "https://images.unsplash.com/photo-1584551246679-0daf3d275d0f?auto=format&fit=crop&w=800&q=80"
         };
 
         const INITIAL_PAYMENT_GATEWAY = {
@@ -1182,7 +1183,7 @@
                             <div className="lg:col-span-5 relative">
                                 <div className="relative rounded-3xl overflow-hidden border-4 border-gold-400/40 shadow-2xl group">
                                     <img 
-                                        src="https://images.unsplash.com/photo-1584551246679-0daf3d275d0f?auto=format&fit=crop&w=800&q=80" 
+                                        src={appSettings.heroImage || INSTITUTION_INFO.heroImage} 
                                         alt="Santri Hidayatullah Sorong" 
                                         className="w-full h-[380px] object-cover group-hover:scale-105 transition duration-700"
                                     />
@@ -3521,6 +3522,32 @@
                                                         onChange={(e) => onAppSettingsChange('name', e.target.value)}
                                                         className="w-full p-3 border rounded-xl"
                                                     />
+                                                </div>
+
+                                                <div className="md:col-span-2 space-y-2">
+                                                    <label className="block text-[10px] font-bold uppercase text-gray-500 mb-1">Foto Hero Section</label>
+                                                    <input
+                                                        type="file"
+                                                        accept="image/*"
+                                                        onChange={(e) => {
+                                                            const file = e.target.files && e.target.files[0];
+                                                            if (!file) return;
+                                                            const reader = new FileReader();
+                                                            reader.onload = () => onAppSettingsChange('heroImage', reader.result);
+                                                            reader.readAsDataURL(file);
+                                                        }}
+                                                        className="w-full p-2 border rounded-xl bg-gray-50"
+                                                    />
+                                                    <input
+                                                        type="url"
+                                                        value={appSettings.heroImage || ''}
+                                                        onChange={(e) => onAppSettingsChange('heroImage', e.target.value)}
+                                                        className="w-full p-3 border rounded-xl"
+                                                        placeholder="https://example.com/hero-image.jpg"
+                                                    />
+                                                    {appSettings.heroImage && (
+                                                        <img src={appSettings.heroImage} alt="Preview hero section" className="w-full h-32 object-cover rounded-xl border border-gray-200" />
+                                                    )}
                                                 </div>
 
                                                 <div className="md:col-span-2 space-y-3">

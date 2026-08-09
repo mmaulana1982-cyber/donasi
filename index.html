@@ -837,6 +837,7 @@
                                 programs={programs} 
                                 stats={stats} 
                                 getProgramProgress={getProgramProgress}
+                                appSettings={appSettings}
                                 onSelectProgram={(slug) => { setSelectedProgramSlug(slug); setCurrentView('program-detail'); }}
                                 onStartDonation={(prog) => { setSelectedProgramForDonation(prog); setDonationModalOpen(true); }}
                                 onNavigate={(view) => setCurrentView(view)}
@@ -1139,7 +1140,7 @@
             );
         }
 
-        function HomeView({ programs, stats, getProgramProgress, onSelectProgram, onStartDonation, onNavigate }) {
+        function HomeView({ programs, stats, getProgramProgress, onSelectProgram, onStartDonation, onNavigate, appSettings }) {
             return (
                 <div className="space-y-16">
                     {/* HERO SECTION */}

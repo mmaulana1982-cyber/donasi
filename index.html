@@ -881,12 +881,16 @@
                         )}
 
                         {currentView === 'tentang' && <TentangKamiView aboutContent={aboutContent} />}
-                        {currentView === 'berita' && <BeritaView contentItems={contentItems} onSelectNews={(id) => { setSelectedNewsId(id); setCurrentView('berita-detail'); }} />}
+                        {currentView === 'berita' && <BeritaView contentItems={contentItems} onSelectNews={(id) => { setSelectedNewsId(id); setCurrentView('berita-detail'); }} isLoggedIn={isLoggedIn} adminRole={adminRole} onEditNews={(item) => { handleEditContent(item); setAdminActiveTab('content'); setCurrentView('admin'); }} onDeleteNews={(id) => handleDeleteContent(id)} />}
                         {currentView === 'berita-detail' && selectedNewsId && (
                             <BeritaDetailView 
                                 contentItems={contentItems} 
                                 selectedNewsId={selectedNewsId} 
                                 onBack={() => setCurrentView('berita')} 
+                                isLoggedIn={isLoggedIn}
+                                adminRole={adminRole}
+                                onEditNews={(item) => { handleEditContent(item); setAdminActiveTab('content'); setCurrentView('admin'); }}
+                                onDeleteNews={(id) => handleDeleteContent(id)}
                             />
                         )}
                         {currentView === 'kontak' && <KontakView />}
@@ -2314,8 +2318,9 @@
             );
         }
 
-        function BeritaView({ contentItems, onSelectNews }) {
+        function BeritaView({ contentItems, onSelectNews, isLoggedIn, adminRole, onEditNews, onDeleteNews }) {
             const news = (contentItems && contentItems.length > 0 ? contentItems : INITIAL_CONTENT_ITEMS).filter(item => item.published);
+            const canManageContent = ['SUPER_ADMIN', 'ADMIN_DONATION'].includes(adminRole);
             return (
                 <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-8">
                     <div className="text-center max-w-2xl mx-auto space-y-3">
@@ -2332,7 +2337,7 @@
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                             {news.map(item => (
-                                <div key={item.id} className="bg-white rounded-3xl overflow-hidden border border-gray-200 shadow-md hover:shadow-xl transition-all duration-300 flex flex-col cursor-pointer" onClick={() => onSelectNews && onSelectNews(item.id)}>
+                                <div key={item.id} className="bg-white rounded-3xl overflow-hidden border border-gray-200 shadow-md hover:shadow-xl transition-all duration-300 flex flex-col">
                                     {item.image && (
                                         <div className="h-48 overflow-hidden">
                                             <img src={item.image} alt={item.title} className="w-full h-full object-cover hover:scale-105 transition duration-500" />
@@ -2345,10 +2350,16 @@
                                         </div>
                                         <h3 className="font-extrabold text-base text-brand-900 leading-snug">{item.title}</h3>
                                         <p className="text-xs text-gray-600 line-clamp-3 leading-relaxed flex-grow">{item.excerpt || item.body}</p>
-                                        <div className="pt-2">
-                                            <span className="inline-flex items-center gap-1 text-xs font-bold text-brand-800 hover:text-brand-900 transition">
+                                        <div className="pt-2 flex items-center justify-between">
+                                            <button onClick={() => onSelectNews && onSelectNews(item.id)} className="inline-flex items-center gap-1 text-xs font-bold text-brand-800 hover:text-brand-900 transition">
                                                 Baca Selengkapnya <i className="fas fa-arrow-right text-[10px]"></i>
-                                            </span>
+                                            </button>
+                                            {isLoggedIn && canManageContent && (
+                                                <div className="flex gap-2">
+                                                    <button onClick={(e) => { e.stopPropagation(); onEditNews && onEditNews(item); }} className="px-2.5 py-1.5 rounded-lg text-[10px] font-bold bg-amber-100 text-amber-700">Edit</button>
+                                                    <button onClick={(e) => { e.stopPropagation(); onDeleteNews && onDeleteNews(item.id); }} className="px-2.5 py-1.5 rounded-lg text-[10px] font-bold bg-red-100 text-red-700">Hapus</button>
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                 </div>
@@ -2359,9 +2370,10 @@
             );
         }
 
-        function BeritaDetailView({ contentItems, selectedNewsId, onBack }) {
+        function BeritaDetailView({ contentItems, selectedNewsId, onBack, isLoggedIn, adminRole, onEditNews, onDeleteNews }) {
             const allContent = (contentItems && contentItems.length > 0 ? contentItems : INITIAL_CONTENT_ITEMS);
             const item = allContent.find(content => content.id === selectedNewsId);
+            const canManageContent = ['SUPER_ADMIN', 'ADMIN_DONATION'].includes(adminRole);
             if (!item) {
                 return (
                     <div className="max-w-4xl mx-auto px-4 py-16 text-center space-y-4">
@@ -2374,9 +2386,17 @@
 
             return (
                 <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-8">
-                    <button onClick={onBack} className="inline-flex items-center gap-2 text-xs font-bold text-gray-600 hover:text-brand-800 transition">
-                        <i className="fas fa-arrow-left"></i> Kembali ke Berita
-                    </button>
+                    <div className="flex items-center justify-between">
+                        <button onClick={onBack} className="inline-flex items-center gap-2 text-xs font-bold text-gray-600 hover:text-brand-800 transition">
+                            <i className="fas fa-arrow-left"></i> Kembali ke Berita
+                        </button>
+                        {isLoggedIn && canManageContent && (
+                            <div className="flex gap-2">
+                                <button onClick={() => onEditNews && onEditNews(item)} className="px-3 py-1.5 rounded-lg text-[10px] font-bold bg-amber-100 text-amber-700">Edit Berita</button>
+                                <button onClick={() => onDeleteNews && onDeleteNews(item.id)} className="px-3 py-1.5 rounded-lg text-[10px] font-bold bg-red-100 text-red-700">Hapus Berita</button>
+                            </div>
+                        )}
+                    </div>
 
                     <article className="bg-white rounded-3xl overflow-hidden border border-gray-200 shadow-md">
                         {item.image && (

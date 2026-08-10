@@ -364,6 +364,7 @@
             // Main App Navigation State
             const [currentView, setCurrentView] = useState('home'); // home, programs, program-detail, transparansi, cek-donasi, tentang, berita, kontak, login, admin
             const [selectedProgramSlug, setSelectedProgramSlug] = useState(null);
+            const [selectedNewsId, setSelectedNewsId] = useState(null);
             const [isLoggedIn, setIsLoggedIn] = useState(false);
             const [loginForm, setLoginForm] = useState({ username: '', password: '' });
             
@@ -880,7 +881,14 @@
                         )}
 
                         {currentView === 'tentang' && <TentangKamiView aboutContent={aboutContent} />}
-                        {currentView === 'berita' && <BeritaView contentItems={contentItems} />}
+                        {currentView === 'berita' && <BeritaView contentItems={contentItems} onSelectNews={(id) => { setSelectedNewsId(id); setCurrentView('berita-detail'); }} />}
+                        {currentView === 'berita-detail' && selectedNewsId && (
+                            <BeritaDetailView 
+                                contentItems={contentItems} 
+                                selectedNewsId={selectedNewsId} 
+                                onBack={() => setCurrentView('berita')} 
+                            />
+                        )}
                         {currentView === 'kontak' && <KontakView />}
                         {currentView === 'login' && (
                             <LoginView 
@@ -2306,7 +2314,7 @@
             );
         }
 
-        function BeritaView({ contentItems }) {
+        function BeritaView({ contentItems, onSelectNews }) {
             const news = (contentItems && contentItems.length > 0 ? contentItems : INITIAL_CONTENT_ITEMS).filter(item => item.published);
             return (
                 <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-8">
@@ -2324,7 +2332,7 @@
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                             {news.map(item => (
-                                <div key={item.id} className="bg-white rounded-3xl overflow-hidden border border-gray-200 shadow-md hover:shadow-xl transition-all duration-300 flex flex-col">
+                                <div key={item.id} className="bg-white rounded-3xl overflow-hidden border border-gray-200 shadow-md hover:shadow-xl transition-all duration-300 flex flex-col cursor-pointer" onClick={() => onSelectNews && onSelectNews(item.id)}>
                                     {item.image && (
                                         <div className="h-48 overflow-hidden">
                                             <img src={item.image} alt={item.title} className="w-full h-full object-cover hover:scale-105 transition duration-500" />
@@ -2346,7 +2354,47 @@
                                 </div>
                             ))}
                         </div>
-                    )}
+                     )}
+                </div>
+            );
+        }
+
+        function BeritaDetailView({ contentItems, selectedNewsId, onBack }) {
+            const allContent = (contentItems && contentItems.length > 0 ? contentItems : INITIAL_CONTENT_ITEMS);
+            const item = allContent.find(content => content.id === selectedNewsId);
+            if (!item) {
+                return (
+                    <div className="max-w-4xl mx-auto px-4 py-16 text-center space-y-4">
+                        <i className="fas fa-newspaper text-4xl text-gray-300"></i>
+                        <p className="text-sm font-bold text-gray-600">Berita tidak ditemukan.</p>
+                        <button onClick={onBack} className="bg-brand-800 text-gold-300 px-6 py-2.5 rounded-xl font-bold text-xs hover:bg-brand-900 transition">Kembali ke Berita</button>
+                    </div>
+                );
+            }
+
+            return (
+                <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-8">
+                    <button onClick={onBack} className="inline-flex items-center gap-2 text-xs font-bold text-gray-600 hover:text-brand-800 transition">
+                        <i className="fas fa-arrow-left"></i> Kembali ke Berita
+                    </button>
+
+                    <article className="bg-white rounded-3xl overflow-hidden border border-gray-200 shadow-md">
+                        {item.image && (
+                            <div className="w-full h-64 sm:h-80 overflow-hidden">
+                                <img src={item.image} alt={item.title} className="w-full h-full object-cover" />
+                            </div>
+                        )}
+                        <div className="p-6 sm:p-10 space-y-4">
+                            <div className="flex items-center gap-2">
+                                <span className="text-[10px] font-bold text-brand-800 bg-brand-50 px-2 py-1 rounded-full uppercase tracking-wider">{item.category}</span>
+                                <span className="text-[10px] text-gray-400">{item.createdAt}</span>
+                            </div>
+                            <h1 className="text-2xl sm:text-3xl font-extrabold text-brand-900 leading-tight">{item.title}</h1>
+                            <div className="text-xs text-gray-600 leading-relaxed whitespace-pre-line">
+                                {item.body}
+                            </div>
+                        </div>
+                    </article>
                 </div>
             );
         }

@@ -85,10 +85,10 @@
             background-image: radial-gradient(#059669 0.75px, transparent 0.75px), radial-gradient(#059669 0.75px, #065f46 0.75px);
             background-size: 30px 30px;
             background-position: 0 0,15px 15px;
-            background-opacity: 0.15;
         }
         .gold-gradient-text {
             background: linear-gradient(135deg, #fbbf24 0%, #d97706 100%);
+            background-clip: text;
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
@@ -122,6 +122,8 @@
 
     <script type="text/babel">
         const { useState, useEffect, useMemo, useRef } = React;
+
+        const GAS_BACKEND_URL = 'https://script.google.com/macros/s/AKfycbzx3d5hCr3XmCtmtCQndyY14Ok64OqrMLQYZ21HG3FJ0uGIFPIN54rhC9taqwrmgmLIcw/exec';
 
         // --- CONSTANTS & INITIAL SEED DATA ---
         const INSTITUTION_INFO = {
@@ -392,6 +394,16 @@
             const [aboutContent, setAboutContent] = useState(INITIAL_ABOUT_CONTENT);
             const [adminAccounts, setAdminAccounts] = useState(DEFAULT_ADMIN_ACCOUNTS);
 
+            // Live Chat State
+            const [chatOpen, setChatOpen] = useState(false);
+            const [chatMessages, setChatMessages] = useState([
+                { sender: 'system', text: 'Assalamu\'alaikum! Selamat datang di Hidayatullah Peduli. Ada yang dapat kami bantu terkait donasi?' }
+            ]);
+            const [chatInput, setChatInput] = useState('');
+            const [pwaInstallPrompt, setPwaInstallPrompt] = useState(null);
+            const [pwaInstallVisible, setPwaInstallVisible] = useState(false);
+            const pwaInstallTimerRef = useRef(null);
+
             const backendInitialized = useRef(false);
             const programsRef = useRef(programs);
             programsRef.current = programs;
@@ -430,7 +442,7 @@
 
             const saveToBackend = async () => {
                 try {
-                    await fetch('/api/data', {
+                    await fetch(GAS_BACKEND_URL, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
@@ -454,7 +466,7 @@
             useEffect(() => {
                 async function loadData() {
                     try {
-                        const res = await fetch('/api/data');
+                        const res = await fetch(GAS_BACKEND_URL);
                         if (res.ok) {
                             const data = await res.json();
                             if (data.programs) setPrograms(data.programs);
@@ -518,16 +530,6 @@
                 });
                 showToast('Pengaturan payment gateway berhasil disimpan.');
             };
-
-            // Live Chat State
-            const [chatOpen, setChatOpen] = useState(false);
-            const [chatMessages, setChatMessages] = useState([
-                { sender: 'system', text: 'Assalamu\'alaikum! Selamat datang di Hidayatullah Peduli. Ada yang dapat kami bantu terkait donasi?' }
-            ]);
-            const [chatInput, setChatInput] = useState('');
-            const [pwaInstallPrompt, setPwaInstallPrompt] = useState(null);
-            const [pwaInstallVisible, setPwaInstallVisible] = useState(false);
-            const pwaInstallTimerRef = useRef(null);
 
             useEffect(() => {
                 const handler = (e) => {

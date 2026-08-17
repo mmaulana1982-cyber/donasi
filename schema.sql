@@ -7,6 +7,7 @@ DROP TABLE IF EXISTS content_items;
 DROP TABLE IF EXISTS audit_logs;
 DROP TABLE IF EXISTS expenses;
 DROP TABLE IF EXISTS donations;
+DROP TABLE IF EXISTS campaigns;
 DROP TABLE IF EXISTS programs;
 
 CREATE TABLE programs (
@@ -22,6 +23,24 @@ CREATE TABLE programs (
     status TEXT DEFAULT 'ACTIVE',
     created_at TEXT DEFAULT CURRENT_TIMESTAMP,
     updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE campaigns (
+    id TEXT PRIMARY KEY,
+    program_id TEXT NOT NULL,
+    title TEXT NOT NULL,
+    slug TEXT NOT NULL,
+    description TEXT,
+    goal_amount INTEGER NOT NULL,
+    raised_amount INTEGER DEFAULT 0,
+    start_date TEXT,
+    end_date TEXT,
+    image TEXT,
+    status TEXT DEFAULT 'ACTIVE',
+    featured INTEGER DEFAULT 0,
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (program_id) REFERENCES programs(id)
 );
 
 CREATE TABLE donations (
@@ -144,6 +163,8 @@ CREATE TABLE chat_messages (
 CREATE INDEX idx_donations_program_id ON donations(program_id);
 CREATE INDEX idx_donations_status ON donations(status);
 CREATE INDEX idx_expenses_program_id ON expenses(program_id);
+CREATE INDEX idx_campaigns_program_id ON campaigns(program_id);
+CREATE INDEX idx_campaigns_status ON campaigns(status);
 CREATE INDEX idx_content_items_category ON content_items(category);
 CREATE INDEX idx_content_items_published ON content_items(published);
 CREATE INDEX idx_audit_logs_timestamp ON audit_logs(timestamp);

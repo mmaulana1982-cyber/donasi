@@ -25,5 +25,8 @@
   "bugs": {
     "url": "https://github.com/mmaulana1982-cyber/donasi/issues"
   },
-  "homepage": "https://github.com/mmaulana1982-cyber/donasi#readme"
+  "homepage": "https://github.com/mmaulana1982-cyber/donasi#readme",
+  "dependencies": {
+    "sharp": "^0.35.3"
+  }
 }
